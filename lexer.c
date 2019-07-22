@@ -7,11 +7,12 @@
 
 struct Token* lex_identifier(FILE* source) {
     int cur;
+    int done = 0;
     unsigned char* identifier = NULL;
     unsigned long size = 0;
     struct Token* token;
 
-    while((cur = fgetc(source)) != EOF) {
+    while(((cur = fgetc(source)) != EOF) && !done) {
         // TODO: Support <peculiar identifier>
         switch ((unsigned char) cur) {
             case 'A' ... 'Z':
@@ -36,9 +37,10 @@ struct Token* lex_identifier(FILE* source) {
             case '@':
                 REALLOC(identifier, ++size * sizeof(unsigned char));
                 identifier[size - 1] = (unsigned char)cur;
-                continue;
+                break;
             default:
                 ungetc(cur, source);
+                done = 1;
                 break;
         }
     }
@@ -57,11 +59,12 @@ struct Token* lex_identifier(FILE* source) {
 
 struct Token* lex_number(FILE* source) {
     int cur;
+    int done = 0;
     unsigned char* digits = NULL;
     unsigned long size = 0;
     struct Token* token;
 
-    while((cur = fgetc(source)) != EOF) {
+    while(((cur = fgetc(source)) != EOF) && !done) {
         switch ((unsigned char) cur) {
             case '0' ... '9':
                 if ((unsigned char)cur == '0' && size == 0) {
@@ -71,9 +74,10 @@ struct Token* lex_number(FILE* source) {
 
                 REALLOC(digits, ++size * sizeof(unsigned char));
                 digits[size - 1] = (unsigned char)cur;
-                continue;
+                break;
             default:
                 ungetc(cur, source);
+                done = 1;
                 break;
         }
     }
@@ -126,19 +130,19 @@ struct TokenList* lex(FILE* source) {
             case '\t':
             case '\n':
             case '\r':
-                continue;
+                break;
             case '(':
                 MALLOC(token, sizeof(struct Token));
                 token->kind = PAREN_L;
                 token->lexeme = NULL;
                 token_list = add_token(token_list, token);
-                continue;
+                break;
             case ')':
                 MALLOC(token, sizeof(struct Token));
                 token->kind = PAREN_R;
                 token->lexeme = NULL;
                 token_list = add_token(token_list, token);
-                continue;
+                break;
             case 'A' ... 'Z':
             case 'a' ... 'z':
             case '+':
@@ -159,11 +163,11 @@ struct TokenList* lex(FILE* source) {
             case '~':
                 ungetc(cur, source);
                 token_list = add_token(token_list, lex_identifier(source));
-                continue;
+                break;
             case '0' ... '9':
                 ungetc(cur, source);
                 token_list = add_token(token_list, lex_number(source));
-                continue;
+                break;
             default:
                 fprintf(stderr, "Unrecognized character: %c", (unsigned char) cur);
                 exit(1);
