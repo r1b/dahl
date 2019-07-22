@@ -1,0 +1,4 @@
+contrib/
+dahl
+*.dSYM
+README.md
