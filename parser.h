@@ -2,7 +2,7 @@
 
 // FIXME: Naming conflicts with lex
 enum ExpressionKind {IDENT, LITERAL, PROCEDURE_CALL};
-enum LiteralKind {NUM}
+enum LiteralKind {NUM};
 
 struct Identifier {
     char* name;
@@ -12,7 +12,7 @@ struct Literal {
     enum LiteralKind kind;
     union {
         int number;
-    } value;
+    };
 };
 
 struct Operand {
@@ -24,7 +24,7 @@ struct Operand {
 struct OperandList {
     struct Operand* head;
     struct Operand* tail;
-}
+};
 
 struct ProcedureCall {
     struct Expression* operator;
@@ -44,22 +44,21 @@ struct Context {
     struct Expression* expression;
     struct Context* prev;
     struct Context* next;
-}
+};
 
 struct ContextStack {
     struct Context* top;
     struct Context* bottom;
 };
 
-struct Parser {
-    struct Token* token;
-    struct ContextStack* context_stack;
-};
-
-struct Expression* parse(struct TokenList*);
-struct Expression* parse_expression(struct Parser*);
-
 void init_context_stack(struct ContextStack*);
+void init_context(struct Context**);
 void push_context(struct Context*, struct ContextStack*);
 struct Context* pop_context(struct ContextStack*);
-void update_top_context(struct Expression*, struct ContextStack*);
+
+void update_procedure_call(struct Expression*, struct ProcedureCall*);
+void update_expression(struct Expression*, struct Expression*);
+
+struct Expression* parse(struct TokenList*);
+struct Expression* parse_expression(struct Token*, struct ContextStack*);
+void display_expression(struct Expression* expression);
