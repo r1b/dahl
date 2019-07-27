@@ -74,7 +74,7 @@ void update_procedure_call(struct Expression *expression, struct ProcedureCall *
 
     if (procedure_call->operand_list == NULL)
     {
-        operand->value = expression;
+        operand->expression = expression;
         operand->prev = NULL;
         operand->next = NULL;
 
@@ -84,7 +84,7 @@ void update_procedure_call(struct Expression *expression, struct ProcedureCall *
         return;
     }
 
-    operand->value = expression;
+    operand->expression = expression;
     operand->prev = procedure_call->operand_list->head;
     operand->next = NULL;
 

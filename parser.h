@@ -27,7 +27,7 @@ struct Literal
 
 struct Operand
 {
-    struct Expression *value;
+    struct Expression *expression;
     struct Operand *next;
     struct Operand *prev;
 };
