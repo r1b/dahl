@@ -133,7 +133,8 @@ struct Expression *parse_expression(struct Token *token, struct ContextStack *co
     case IDENTIFIER:
         expression->kind = IDENT;
         MALLOC(expression->identifier, sizeof(struct Identifier));
-        memcpy(&expression->identifier->name, &token->lexeme, strlen((const char *)token->lexeme) + 1);
+        MALLOC(expression->identifier->name, strlen((const char *)token->lexeme) + 1);
+        memcpy(expression->identifier->name, token->lexeme, strlen((const char *)token->lexeme) + 1);
         break;
     case NUMBER:
         expression->kind = LITERAL;
