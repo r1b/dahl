@@ -108,9 +108,7 @@ struct Expression *parse(struct TokenList *token_list)
 {
     struct ContextStack *context_stack = init_context_stack();
     struct Expression *expression = NULL;
-    struct Token *token;
-
-    token = token_list->head;
+    struct Token *token = token_list->head;
 
     while (token != NULL)
     {
@@ -135,7 +133,7 @@ struct Expression *parse_expression(struct Token *token, struct ContextStack *co
     case IDENTIFIER:
         expression->kind = IDENT;
         MALLOC(expression->identifier, sizeof(struct Identifier));
-        memcpy(&token->lexeme, &expression->identifier->name, strlen((const char *)token->lexeme) + 1);
+        memcpy(&expression->identifier->name, &token->lexeme, strlen((const char *)token->lexeme) + 1);
         break;
     case NUMBER:
         expression->kind = LITERAL;
