@@ -54,8 +54,7 @@ struct ProcedureCall *init_procedure_call(void)
 {
     struct ProcedureCall *procedure_call;
     MALLOC(procedure_call, sizeof(struct ProcedureCall));
-    MALLOC(procedure_call->operator_, sizeof(struct Expression));
-    MALLOC(procedure_call->operand_list, sizeof(struct OperandList));
+
     procedure_call->operator_ = NULL;
     procedure_call->operand_list = NULL;
     return procedure_call;
@@ -65,6 +64,7 @@ void update_procedure_call(struct Expression *expression, struct ProcedureCall *
 {
     if (procedure_call->operator_ == NULL)
     {
+        MALLOC(procedure_call->operator_, sizeof(struct Expression));
         procedure_call->operator_ = expression;
         return;
     }
@@ -78,6 +78,7 @@ void update_procedure_call(struct Expression *expression, struct ProcedureCall *
         operand->prev = NULL;
         operand->next = NULL;
 
+        MALLOC(procedure_call->operand_list, sizeof(struct OperandList));
         procedure_call->operand_list->head = operand;
         procedure_call->operand_list->tail = operand;
         return;
