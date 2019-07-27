@@ -154,7 +154,7 @@ struct Expression *parse_expression(struct Token *token, struct ContextStack *co
         context->expression = expression;
 
         push_context(context, context_stack);
-        break;
+        return expression;
     case PAREN_R:
         context = pop_context(context_stack);
         expression = context->expression;
