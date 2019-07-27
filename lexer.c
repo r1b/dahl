@@ -59,7 +59,7 @@ struct Token *lex_identifier(FILE *source)
     identifier[size - 1] = '\0';
 
     MALLOC(token, sizeof(struct Token));
-    token->kind = IDENTIFIER;
+    token->kind = TOKEN_IDENTIFIER;
     token->lexeme = identifier;
 
     return token;
@@ -103,7 +103,7 @@ struct Token *lex_number(FILE *source)
     digits[size] = '\0';
 
     MALLOC(token, sizeof(struct Token));
-    token->kind = NUMBER;
+    token->kind = TOKEN_NUMBER;
     token->lexeme = digits;
 
     return token;
@@ -155,14 +155,14 @@ struct TokenList *lex(FILE *source)
             break;
         case '(':
             MALLOC(token, sizeof(struct Token));
-            token->kind = PAREN_L;
+            token->kind = TOKEN_PAREN_L;
             token->lexeme = NULL;
 
             token_list = add_token(token_list, token);
             break;
         case ')':
             MALLOC(token, sizeof(struct Token));
-            token->kind = PAREN_R;
+            token->kind = TOKEN_PAREN_R;
             token->lexeme = NULL;
 
             token_list = add_token(token_list, token);
@@ -205,13 +205,13 @@ char *render_token_kind(enum TokenKind token_kind)
 {
     switch (token_kind)
     {
-    case IDENTIFIER:
+    case TOKEN_IDENTIFIER:
         return "IDENTIFIER";
-    case NUMBER:
+    case TOKEN_NUMBER:
         return "NUMBER";
-    case PAREN_L:
+    case TOKEN_PAREN_L:
         return "PAREN_L";
-    case PAREN_R:
+    case TOKEN_PAREN_R:
         return "PAREN_R";
     }
 }

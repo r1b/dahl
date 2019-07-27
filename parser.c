@@ -95,7 +95,7 @@ void update_expression(struct Expression *src_expression, struct Expression *des
 {
     switch (dest_expression->kind)
     {
-    case PROCEDURE_CALL:
+    case EXPR_PROCEDURE_CALL:
         update_procedure_call(src_expression, dest_expression->procedure_call);
         break;
     default:
@@ -130,23 +130,23 @@ struct Expression *parse_expression(struct Token *token, struct ContextStack *co
 
     switch (token->kind)
     {
-    case IDENTIFIER:
-        expression->kind = IDENT;
+    case TOKEN_IDENTIFIER:
+        expression->kind = EXPR_IDENTIFIER;
         MALLOC(expression->identifier, sizeof(struct Identifier));
         MALLOC(expression->identifier->name, strlen((const char *)token->lexeme) + 1);
         memcpy(expression->identifier->name, token->lexeme, strlen((const char *)token->lexeme) + 1);
         break;
-    case NUMBER:
-        expression->kind = LITERAL;
+    case TOKEN_NUMBER:
+        expression->kind = EXPR_LITERAL;
         MALLOC(expression->literal, sizeof(struct Literal));
-        expression->literal->kind = NUM;
+        expression->literal->kind = LIT_NUMBER;
         // FIXME: This won't work for numeric tower
         expression->literal->number = atoi((char *)token->lexeme);
         break;
-    case PAREN_L:
+    case TOKEN_PAREN_L:
         MALLOC(expression->procedure_call, sizeof(struct ProcedureCall));
 
-        expression->kind = PROCEDURE_CALL;
+        expression->kind = EXPR_PROCEDURE_CALL;
         expression->procedure_call = init_procedure_call();
 
         context = init_context();
@@ -154,7 +154,7 @@ struct Expression *parse_expression(struct Token *token, struct ContextStack *co
 
         push_context(context, context_stack);
         return expression;
-    case PAREN_R:
+    case TOKEN_PAREN_R:
         context = pop_context(context_stack);
         expression = context->expression;
         break;

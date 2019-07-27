@@ -1,15 +1,17 @@
+#ifndef PARSER_H
+#define PARSER_H
+
 #include "lexer.h"
 
-// FIXME: Naming conflicts with lex
 enum ExpressionKind
 {
-    IDENT,
-    LITERAL,
-    PROCEDURE_CALL
+    EXPR_IDENTIFIER,
+    EXPR_LITERAL,
+    EXPR_PROCEDURE_CALL
 };
 enum LiteralKind
 {
-    NUM
+    LIT_NUMBER
 };
 
 struct Identifier
@@ -79,3 +81,5 @@ void update_expression(struct Expression *, struct Expression *);
 struct Expression *parse(struct TokenList *);
 struct Expression *parse_expression(struct Token *, struct ContextStack *);
 void display_expression(struct Expression *expression);
+
+#endif

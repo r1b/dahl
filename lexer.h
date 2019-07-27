@@ -5,10 +5,10 @@
 
 enum TokenKind
 {
-    IDENTIFIER,
-    NUMBER,
-    PAREN_L,
-    PAREN_R
+    TOKEN_IDENTIFIER,
+    TOKEN_NUMBER,
+    TOKEN_PAREN_L,
+    TOKEN_PAREN_R
 };
 
 struct Token
