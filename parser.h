@@ -73,6 +73,5 @@ void update_expression(struct Expression *, struct Expression *);
 
 struct Expression *parse(struct TokenList *);
 struct Expression *parse_expression(struct Token *, struct ContextStack *);
-void display_expression(struct Expression *expression);
 
 #endif

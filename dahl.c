@@ -1,5 +1,7 @@
+#include "compiler.h"
 #include "lexer.h"
 #include "parser.h"
+#include "vm.h"
 
 // According to V `8` is my "life path"
 // https://feliciabender.com/eight-life-path-2/
@@ -8,22 +10,12 @@
 int main(int argc, char **argv)
 {
     struct TokenList *token_list = lex(stdin);
-#ifdef DEBUG
-    display_token_list(token_list);
-#endif
-
     struct Expression *expression = parse(token_list);
-#ifdef DEBUG
-    display_expression(expression);
-#endif
 
-    /* 
     struct InstructionList *instruction_list = compile(expression);
-#ifdef DEBUG
-    display_instruction_list(instruction_list);
-#endif
-    evaluate(instruction_list);
-    */
+    union RuntimeValue *runtime_value = vm_exec(instruction_list);
+
+    fprintf(stdout, "God says: %d", runtime_value->immediate);
 
     return 0;
 }

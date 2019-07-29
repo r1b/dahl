@@ -120,8 +120,3 @@ struct Expression *parse_expression(struct Token *token, struct ContextStack *co
 
     return expression;
 }
-
-void display_expression(struct Expression *expression)
-{
-    fprintf(stdout, "TODO");
-}
