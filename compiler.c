@@ -11,18 +11,18 @@ void push_procedure_call_context(struct ProcedureCall *procedure_call, struct Co
     MALLOC(operator_context, sizeof(struct Context));
 
     operator_context->expression = procedure_call->operator_;
-    push_context(operator_context, context_stack);
+    SLIST_INSERT_HEAD(context_stack, operator_context, entries);
+
+    struct Operand *operand;
 
     // XXX: Push them on backwards for LtoR evaluation
-    struct Operand *operand = procedure_call->operand_list->tail;
-
-    while (operand->prev != NULL)
+    TAILQ_FOREACH_REVERSE(operand, procedure_call->operand_list, OperandList, entries)
     {
         struct Context *operand_context;
         MALLOC(operand_context, sizeof(struct Context));
 
         operand_context->expression = operand->expression;
-        push_context(operand_context, context_stack);
+        SLIST_INSERT_HEAD(context_stack, operand_context, entries);
     }
 }
 
@@ -39,9 +39,9 @@ struct InstructionList *compile(struct Expression *expression)
     MALLOC(context, sizeof(struct Context));
     context->expression = expression;
 
-    push_context(context, context_stack);
+    SLIST_INSERT_HEAD(context_stack, context, entries);
 
-    while (context_stack->top != NULL)
+    while (!SLIST_EMPTY(context_stack))
     {
         compile_expression(context_stack, instruction_list);
     }
@@ -49,9 +49,11 @@ struct InstructionList *compile(struct Expression *expression)
     // FIXME: For now, assume that we always want the last value on the stack
     struct Instruction *instruction;
     MALLOC(instruction, sizeof(struct Instruction));
+
     instruction->kind = INSTRUCTION_POP;
     instruction->operand = NULL;
-    add_instruction(instruction, instruction_list);
+
+    STAILQ_INSERT_TAIL(instruction_list, instruction, entries);
 
     return instruction_list;
 }
@@ -60,7 +62,8 @@ void *compile_expression(struct ContextStack *context_stack,
                          struct InstructionList *instruction_list)
 {
     struct Instruction *instruction;
-    struct Context *context = pop_context(context_stack);
+    struct Context *context = SLIST_FIRST(context_stack);
+    SLIST_REMOVE_HEAD(context_stack, entries);
     struct Expression *expression = context->expression;
 
     switch (expression->kind)
@@ -71,14 +74,14 @@ void *compile_expression(struct ContextStack *context_stack,
             MALLOC(instruction, sizeof(struct Instruction));
             instruction->kind = INSTRUCTION_ADD;
             instruction->operand = NULL;
-            add_instruction(instruction, instruction_list);
+            STAILQ_INSERT_TAIL(instruction_list, instruction, entries);
         }
         else if (strcmp(expression->identifier->name, "*") == 0)
         {
             MALLOC(instruction, sizeof(struct Instruction));
             instruction->kind = INSTRUCTION_MUL;
             instruction->operand = NULL;
-            add_instruction(instruction, instruction_list);
+            STAILQ_INSERT_TAIL(instruction_list, instruction, entries);
         }
         else
         {
@@ -95,7 +98,7 @@ void *compile_expression(struct ContextStack *context_stack,
             MALLOC(instruction->operand, sizeof(union RuntimeValue));
             instruction->kind = INSTRUCTION_PUSH;
             instruction->operand->immediate = expression->literal->number;
-            add_instruction(instruction, instruction_list);
+            STAILQ_INSERT_TAIL(instruction_list, instruction, entries);
             break;
         }
     case EXPR_PROCEDURE_CALL:

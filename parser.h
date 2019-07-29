@@ -1,6 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <sys/queue.h>
 #include "lexer.h"
 
 enum ExpressionKind
@@ -30,15 +31,13 @@ struct Literal
 struct Operand
 {
     struct Expression *expression;
-    struct Operand *next;
-    struct Operand *prev;
+    // clang-format off
+    TAILQ_ENTRY(Operand) entries;
+    // clang-format on
 };
 
-struct OperandList
-{
-    struct Operand *head;
-    struct Operand *tail;
-};
+// XXX: We want to traverse this backwards later!
+TAILQ_HEAD(OperandList, Operand);
 
 struct ProcedureCall
 {
@@ -59,20 +58,14 @@ struct Expression
 struct Context
 {
     struct Expression *expression;
-    struct Context *prev;
-    struct Context *next;
+    // clang-format off
+    SLIST_ENTRY(Context) entries;
+    // clang-format on
 };
 
-struct ContextStack
-{
-    struct Context *top;
-    struct Context *bottom;
-};
+SLIST_HEAD(ContextStack, Context);
 
-struct ContextStack *init_context_stack(void);
 struct Context *init_context(void);
-void push_context(struct Context *, struct ContextStack *);
-struct Context *pop_context(struct ContextStack *);
 
 struct ProcedureCall *init_procedure_call(void);
 void update_procedure_call(struct Expression *, struct ProcedureCall *);

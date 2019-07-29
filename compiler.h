@@ -1,6 +1,7 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
+#include <sys/queue.h>
 #include "parser.h"
 
 enum InstructionKind
@@ -21,21 +22,15 @@ struct Instruction
 {
     enum InstructionKind kind;
     union RuntimeValue *operand;
-    struct Instruction *next;
-    struct Instruction *prev;
+    // clang-format off
+    STAILQ_ENTRY(Instruction) entries;
+    // clang-format on
 };
 
-struct InstructionList
-{
-    struct Instruction *head;
-    struct Instruction *tail;
-};
+STAILQ_HEAD(InstructionList, Instruction);
 
 struct InstructionList *compile(struct Expression *);
 void *compile_expression(struct ContextStack *, struct InstructionList *);
 void push_procedure_call_context(struct ProcedureCall *, struct ContextStack *);
-
-struct InstructionList *add_instruction(struct Instruction *, struct InstructionList *);
-struct InstructionList *init_instruction_list(void);
 
 #endif

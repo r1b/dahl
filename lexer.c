@@ -109,28 +109,6 @@ struct Token *lex_number(FILE *source)
     return token;
 }
 
-struct TokenList *add_token(struct TokenList *token_list, struct Token *token)
-{
-    if (token_list->head == NULL)
-    {
-        token->prev = NULL;
-        token->next = NULL;
-
-        token_list->head = token;
-        token_list->tail = token;
-
-        return token_list;
-    }
-
-    token->prev = token_list->tail;
-    token->next = NULL;
-
-    token_list->tail->next = token;
-    token_list->tail = token;
-
-    return token_list;
-}
-
 struct TokenList *lex(FILE *source)
 {
     int cur_;
@@ -138,8 +116,7 @@ struct TokenList *lex(FILE *source)
     struct TokenList *token_list;
 
     MALLOC(token_list, sizeof(struct TokenList));
-    token_list->head = NULL;
-    token_list->tail = NULL;
+    STAILQ_INIT(token_list);
 
     while ((cur_ = fgetc(source)) != EOF)
     {
@@ -158,14 +135,15 @@ struct TokenList *lex(FILE *source)
             token->kind = TOKEN_PAREN_L;
             token->lexeme = NULL;
 
-            token_list = add_token(token_list, token);
+            STAILQ_INSERT_TAIL(token_list, token, entries);
+
             break;
         case ')':
             MALLOC(token, sizeof(struct Token));
             token->kind = TOKEN_PAREN_R;
             token->lexeme = NULL;
 
-            token_list = add_token(token_list, token);
+            STAILQ_INSERT_TAIL(token_list, token, entries);
             break;
         case 'A' ... 'Z':
         case 'a' ... 'z':
@@ -186,11 +164,11 @@ struct TokenList *lex(FILE *source)
         case '_':
         case '~':
             ungetc(cur, source);
-            token_list = add_token(token_list, lex_identifier(source));
+            STAILQ_INSERT_TAIL(token_list, lex_identifier(source), entries);
             break;
         case '0' ... '9':
             ungetc(cur, source);
-            token_list = add_token(token_list, lex_number(source));
+            STAILQ_INSERT_TAIL(token_list, lex_number(source), entries);
             break;
         default:
             fprintf(stderr, "Unrecognized character: %c", cur);
@@ -227,14 +205,13 @@ char *render_token_lexeme(unsigned char *lexeme)
 
 void display_token_list(struct TokenList *token_list)
 {
-    struct Token *token = token_list->head;
+    struct Token *token;
 
-    while (token != NULL)
+    STAILQ_FOREACH(token, token_list, entries)
     {
         fprintf(stdout,
                 "<%s: %s>\n",
                 render_token_kind(token->kind),
                 render_token_lexeme(token->lexeme));
-        token = token->next;
     }
 }

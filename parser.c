@@ -5,48 +5,11 @@
 #include "parser.h"
 #include "utils.h"
 
-struct ContextStack *init_context_stack(void)
-{
-    struct ContextStack *context_stack;
-    MALLOC(context_stack, sizeof(struct ContextStack));
-    context_stack->top = NULL;
-    context_stack->bottom = NULL;
-    return context_stack;
-}
-
 struct Context *init_context(void)
 {
     struct Context *context;
     MALLOC(context, sizeof(struct Context));
     MALLOC(context->expression, sizeof(struct Expression));
-    MALLOC(context->prev, sizeof(struct Context));
-    MALLOC(context->next, sizeof(struct Context));
-    return context;
-}
-
-void push_context(struct Context *context, struct ContextStack *context_stack)
-{
-    context->prev = context_stack->top;
-    context->next = NULL;
-
-    context_stack->top = context;
-
-    if (context_stack->bottom == NULL)
-    {
-        context_stack->bottom = context;
-    }
-}
-
-struct Context *pop_context(struct ContextStack *context_stack)
-{
-    struct Context *context = context_stack->top;
-    context_stack->top = context->prev;
-
-    if (context_stack->top == NULL)
-    {
-        context_stack->bottom = NULL;
-    }
-
     return context;
 }
 
@@ -54,9 +17,11 @@ struct ProcedureCall *init_procedure_call(void)
 {
     struct ProcedureCall *procedure_call;
     MALLOC(procedure_call, sizeof(struct ProcedureCall));
+    MALLOC(procedure_call->operand_list, sizeof(struct OperandList));
 
     procedure_call->operator_ = NULL;
-    procedure_call->operand_list = NULL;
+    TAILQ_INIT(procedure_call->operand_list);
+
     return procedure_call;
 }
 
@@ -71,24 +36,9 @@ void update_procedure_call(struct Expression *expression, struct ProcedureCall *
 
     struct Operand *operand;
     MALLOC(operand, sizeof(struct Operand *));
-
-    if (procedure_call->operand_list == NULL)
-    {
-        operand->expression = expression;
-        operand->prev = NULL;
-        operand->next = NULL;
-
-        MALLOC(procedure_call->operand_list, sizeof(struct OperandList));
-        procedure_call->operand_list->head = operand;
-        procedure_call->operand_list->tail = operand;
-        return;
-    }
-
     operand->expression = expression;
-    operand->prev = procedure_call->operand_list->head;
-    operand->next = NULL;
 
-    procedure_call->operand_list->head = operand;
+    TAILQ_INSERT_TAIL(procedure_call->operand_list, operand, entries);
 }
 
 void update_expression(struct Expression *src_expression, struct Expression *dest_expression)
@@ -106,14 +56,19 @@ void update_expression(struct Expression *src_expression, struct Expression *des
 
 struct Expression *parse(struct TokenList *token_list)
 {
-    struct ContextStack *context_stack = init_context_stack();
-    struct Expression *expression = NULL;
-    struct Token *token = token_list->head;
+    struct ContextStack *context_stack;
+    struct Expression *expression;
+    struct Token *token;
 
-    while (token != NULL)
+    MALLOC(context_stack, sizeof(struct ContextStack));
+    SLIST_INIT(context_stack);
+
+    expression = NULL;
+
+    STAILQ_FOREACH(token, token_list, entries)
     {
+        // FIXME: Don't do this dumb shit just pop the last one
         expression = parse_expression(token, context_stack);
-        token = token->next;
     }
 
     free(context_stack);
@@ -152,17 +107,18 @@ struct Expression *parse_expression(struct Token *token, struct ContextStack *co
         context = init_context();
         context->expression = expression;
 
-        push_context(context, context_stack);
+        SLIST_INSERT_HEAD(context_stack, context, entries);
         return expression;
     case TOKEN_PAREN_R:
-        context = pop_context(context_stack);
+        context = SLIST_FIRST(context_stack);
+        SLIST_REMOVE_HEAD(context_stack, entries);
         expression = context->expression;
         break;
     }
 
-    if (context_stack->top != NULL)
+    if (!SLIST_EMPTY(context_stack))
     {
-        update_expression(expression, context_stack->top->expression);
+        update_expression(expression, (SLIST_FIRST(context_stack))->expression);
     }
 
     return expression;
