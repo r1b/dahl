@@ -30,7 +30,7 @@ struct Instruction
 STAILQ_HEAD(InstructionList, Instruction);
 
 struct InstructionList *compile(struct Expression *);
-void *compile_expression(struct ContextStack *, struct InstructionList *);
+void compile_expression(struct ContextStack *, struct InstructionList *);
 void push_procedure_call_context(struct ProcedureCall *, struct ContextStack *);
 
 #endif

@@ -161,11 +161,13 @@ struct TokenList *lex(FILE *source)
         case '_':
         case '~':
             ungetc(cur, source);
-            STAILQ_INSERT_TAIL(token_list, lex_identifier(source), entries);
+            token = lex_identifier(source);
+            STAILQ_INSERT_TAIL(token_list, token, entries);
             break;
         case '0' ... '9':
             ungetc(cur, source);
-            STAILQ_INSERT_TAIL(token_list, lex_number(source), entries);
+            token = lex_number(source);
+            STAILQ_INSERT_TAIL(token_list, token, entries);
             break;
         default:
             fprintf(stderr, "Unrecognized character: %c", cur);

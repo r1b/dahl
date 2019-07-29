@@ -55,8 +55,8 @@ struct InstructionList *compile(struct Expression *expression)
     return instruction_list;
 }
 
-void *compile_expression(struct ContextStack *context_stack,
-                         struct InstructionList *instruction_list)
+void compile_expression(struct ContextStack *context_stack,
+                        struct InstructionList *instruction_list)
 {
     struct Instruction *instruction;
     struct Context *context = SLIST_FIRST(context_stack);
