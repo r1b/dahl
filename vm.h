@@ -1,23 +1,26 @@
 #ifndef VM_H
 #define VM_H
 
+#include <sys/queue.h>
 #include "compiler.h"
 
 struct VmStackValue
 {
-    union RuntimeValue value;
-    struct VmStackValue *next;
-    struct VmStackValue *prev;
+    union RuntimeValue *value;
+    // clang-format off
+    SLIST_ENTRY(VmStackValue) entries;
+    // clang-format on
 };
 
-struct VmStack
-{
-    struct VmStackValue *top;
-    struct VmStackValue *bottom;
-};
+SLIST_HEAD(VmStack, VmStackValue);
+
+// FIXME: These names make me want to puke emoji
+// I think I'm just in a bad mood so will re-evaluate later
 
 union RuntimeValue *vm_exec(struct InstructionList *);
-union RuntimeValue *vm_stack_pop(void);
-void vm_stack_push(union RuntimeValue *);
+union RuntimeValue *vm_exec_add(struct VmStack *);
+union RuntimeValue *vm_exec_mul(struct VmStack *);
+union RuntimeValue *vm_exec_pop(struct VmStack *);
+void vm_exec_push(union RuntimeValue *, struct VmStack *);
 
 #endif

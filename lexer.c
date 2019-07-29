@@ -1,7 +1,4 @@
-#include <errno.h>
-#include <stdlib.h>
 #include <stdbool.h>
-#include <string.h>
 
 #include "lexer.h"
 #include "utils.h"

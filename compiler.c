@@ -1,6 +1,3 @@
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
 #include "compiler.h"
 #include "parser.h"
 #include "utils.h"
