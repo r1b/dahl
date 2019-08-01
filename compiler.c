@@ -12,8 +12,7 @@ void push_procedure_call_context(struct ProcedureCall *procedure_call, struct Co
 
     struct Operand *operand;
 
-    // XXX: Push them on backwards for LtoR evaluation
-    TAILQ_FOREACH_REVERSE(operand, procedure_call->operand_list, OperandList, entries)
+    STAILQ_FOREACH(operand, procedure_call->operand_list, entries)
     {
         struct Context *operand_context;
         MALLOC(operand_context, sizeof(struct Context));
@@ -30,6 +29,8 @@ struct InstructionList *compile(struct Expression *expression)
 
     MALLOC(context_stack, sizeof(struct ContextStack));
     MALLOC(instruction_list, sizeof(struct InstructionList));
+
+    STAILQ_INIT(instruction_list);
 
     struct Context *context;
 
@@ -60,8 +61,9 @@ void compile_expression(struct ContextStack *context_stack,
 {
     struct Instruction *instruction;
     struct Context *context = SLIST_FIRST(context_stack);
-    SLIST_REMOVE_HEAD(context_stack, entries);
     struct Expression *expression = context->expression;
+
+    SLIST_REMOVE_HEAD(context_stack, entries);
 
     switch (expression->kind)
     {
@@ -98,6 +100,7 @@ void compile_expression(struct ContextStack *context_stack,
             STAILQ_INSERT_TAIL(instruction_list, instruction, entries);
             break;
         }
+        break;
     case EXPR_PROCEDURE_CALL:
         push_procedure_call_context(expression->procedure_call, context_stack);
         break;

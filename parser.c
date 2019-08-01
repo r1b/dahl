@@ -17,7 +17,7 @@ struct ProcedureCall *init_procedure_call(void)
     MALLOC(procedure_call->operand_list, sizeof(struct OperandList));
 
     procedure_call->operator_ = NULL;
-    TAILQ_INIT(procedure_call->operand_list);
+    STAILQ_INIT(procedure_call->operand_list);
 
     return procedure_call;
 }
@@ -35,7 +35,7 @@ void update_procedure_call(struct Expression *expression, struct ProcedureCall *
     MALLOC(operand, sizeof(struct Operand *));
     operand->expression = expression;
 
-    TAILQ_INSERT_TAIL(procedure_call->operand_list, operand, entries);
+    STAILQ_INSERT_TAIL(procedure_call->operand_list, operand, entries);
 }
 
 void update_expression(struct Expression *src_expression, struct Expression *dest_expression)

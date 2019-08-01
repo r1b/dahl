@@ -32,12 +32,11 @@ struct Operand
 {
     struct Expression *expression;
     // clang-format off
-    TAILQ_ENTRY(Operand) entries;
+    STAILQ_ENTRY(Operand) entries;
     // clang-format on
 };
 
-// XXX: We want to traverse this backwards later!
-TAILQ_HEAD(OperandList, Operand);
+STAILQ_HEAD(OperandList, Operand);
 
 struct ProcedureCall
 {
