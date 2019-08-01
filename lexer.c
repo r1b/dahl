@@ -78,9 +78,9 @@ struct Token *lex_number(FILE *source)
         switch (cur)
         {
         case '0' ... '9':
-            if (cur == '0' && size == 0)
+            if (size == 1 && digits[0] == '0')
             {
-                fprintf(stderr, "Numbers cannot begin with `0`");
+                fprintf(stderr, "Numbers cannot begin with `0`\n");
                 exit(1);
             }
 
