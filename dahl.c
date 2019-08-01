@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     struct InstructionList *instruction_list = compile(expression);
     union RuntimeValue *runtime_value = vm_exec(instruction_list);
 
-    fprintf(stdout, "God says: %d", runtime_value->immediate);
+    fprintf(stdout, "God says: %d\n", runtime_value->immediate);
 
     return 0;
 }
