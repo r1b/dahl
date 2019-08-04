@@ -4,10 +4,25 @@
 
 START_TEST(test_lex_simple_expression)
 {
-    FILE *fd = fopen("tests/fixtures/simple-expression.scm", "r");
+    char expr[] = "(+ 1 1)";
+    int expected_kinds[] = {
+        TOKEN_PAREN_L,
+        TOKEN_IDENTIFIER,
+        TOKEN_NUMBER,
+        TOKEN_NUMBER,
+        TOKEN_PAREN_R,
+    };
 
+    FILE *fd = fmemopen(expr, strlen(expr), "r");
     struct TokenList *token_list = lex(fd);
-    ck_assert_int_eq(STAILQ_FIRST(token_list)->kind, TOKEN_PAREN_L);
+
+    struct Token *token;
+    unsigned int i = 0;
+    STAILQ_FOREACH(token, token_list, entries)
+    {
+        ck_assert_int_eq(token->kind, expected_kinds[i]);
+        i += 1;
+    }
 
     free_token_list(token_list);
     fclose(fd);
