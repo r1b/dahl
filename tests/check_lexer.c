@@ -5,8 +5,11 @@
 START_TEST(test_lex_simple_expression)
 {
     FILE *fd = fopen("tests/fixtures/simple-expression.scm", "r");
-    struct TokenList *tokens = lex(fd);
-    ck_assert_int_eq(STAILQ_FIRST(tokens)->kind, TOKEN_PAREN_L);
+
+    struct TokenList *token_list = lex(fd);
+    ck_assert_int_eq(STAILQ_FIRST(token_list)->kind, TOKEN_PAREN_L);
+
+    free_token_list(token_list);
     fclose(fd);
 }
 END_TEST

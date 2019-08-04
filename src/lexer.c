@@ -177,3 +177,20 @@ struct TokenList *lex(FILE *source)
 
     return token_list;
 }
+
+void free_token(struct Token *token)
+{
+    free(token->lexeme);
+    free(token);
+}
+
+void free_token_list(struct TokenList *token_list)
+{
+    struct Token *token, *token_;
+    STAILQ_FOREACH_SAFE(token, token_list, entries, token_)
+    {
+        STAILQ_REMOVE(token_list, token, Token, entries);
+        free_token(token);
+    }
+    free(token_list);
+}

@@ -24,6 +24,9 @@ struct Token
 STAILQ_HEAD(TokenList, Token);
 
 struct TokenList *add_token(struct TokenList *, struct Token *);
+void free_token(struct Token*);
+void free_token_list(struct TokenList*);
+
 struct TokenList *lex(FILE *source);
 struct Token *lex_identifier(FILE *);
 struct Token *lex_number(FILE *);

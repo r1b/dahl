@@ -3,4 +3,4 @@ debug:
 lib:
 	clang -o build/libdahl.dylib -shared src/*.c
 test:
-	clang -Lbuild -lcheck -ldahl -o build/test-dahl  tests/*.c && ./build/test-dahl
+	clang -Lbuild -lcheck -ldahl -o build/test-dahl tests/*.c && ./build/test-dahl
