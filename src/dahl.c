@@ -7,8 +7,7 @@
 // https://feliciabender.com/eight-life-path-2/
 #define DEBUG 8
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     struct TokenList *token_list = lex(stdin);
     struct Expression *expression = parse(token_list);
     struct InstructionList *instruction_list = compile(expression);

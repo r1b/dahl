@@ -2,8 +2,8 @@
 #include "parser.h"
 #include "utils.h"
 
-void push_procedure_call_context(struct ProcedureCall *procedure_call, struct ContextStack *context_stack)
-{
+void push_procedure_call_context(struct ProcedureCall *procedure_call,
+                                 struct ContextStack *context_stack) {
     struct Context *operator_context;
     MALLOC(operator_context, sizeof(struct Context));
 
@@ -12,8 +12,7 @@ void push_procedure_call_context(struct ProcedureCall *procedure_call, struct Co
 
     struct Operand *operand;
 
-    STAILQ_FOREACH(operand, procedure_call->operand_list, entries)
-    {
+    STAILQ_FOREACH(operand, procedure_call->operand_list, entries) {
         struct Context *operand_context;
         MALLOC(operand_context, sizeof(struct Context));
 
@@ -22,8 +21,7 @@ void push_procedure_call_context(struct ProcedureCall *procedure_call, struct Co
     }
 }
 
-struct InstructionList *compile(struct Expression *expression)
-{
+struct InstructionList *compile(struct Expression *expression) {
     struct ContextStack *context_stack;
     struct InstructionList *instruction_list;
 
@@ -39,8 +37,7 @@ struct InstructionList *compile(struct Expression *expression)
 
     SLIST_INSERT_HEAD(context_stack, context, entries);
 
-    while (!SLIST_EMPTY(context_stack))
-    {
+    while (!SLIST_EMPTY(context_stack)) {
         compile_expression(context_stack, instruction_list);
     }
 
@@ -57,52 +54,48 @@ struct InstructionList *compile(struct Expression *expression)
 }
 
 void compile_expression(struct ContextStack *context_stack,
-                        struct InstructionList *instruction_list)
-{
+                        struct InstructionList *instruction_list) {
     struct Instruction *instruction;
     struct Context *context = SLIST_FIRST(context_stack);
     struct Expression *expression = context->expression;
 
     SLIST_REMOVE_HEAD(context_stack, entries);
 
-    switch (expression->kind)
-    {
-    case EXPR_IDENTIFIER:
-        if (strcmp(expression->identifier->name, "+") == 0)
-        {
-            MALLOC(instruction, sizeof(struct Instruction));
-            instruction->kind = INSTRUCTION_ADD;
-            instruction->operand = NULL;
-            STAILQ_INSERT_TAIL(instruction_list, instruction, entries);
-        }
-        else if (strcmp(expression->identifier->name, "*") == 0)
-        {
-            MALLOC(instruction, sizeof(struct Instruction));
-            instruction->kind = INSTRUCTION_MUL;
-            instruction->operand = NULL;
-            STAILQ_INSERT_TAIL(instruction_list, instruction, entries);
-        }
-        else
-        {
-            fprintf(stderr, "Cannot compile identifier: %s", expression->identifier->name);
-            exit(1);
-        }
-        // TODO: Non-builtins
-        break;
-    case EXPR_LITERAL:
-        switch (expression->literal->kind)
-        {
-        case LIT_NUMBER:
-            MALLOC(instruction, sizeof(struct Instruction));
-            MALLOC(instruction->operand, sizeof(union RuntimeValue));
-            instruction->kind = INSTRUCTION_PUSH;
-            instruction->operand->immediate = expression->literal->number;
-            STAILQ_INSERT_TAIL(instruction_list, instruction, entries);
+    switch (expression->kind) {
+        case EXPR_IDENTIFIER:
+            if (strcmp(expression->identifier->name, "+") == 0) {
+                MALLOC(instruction, sizeof(struct Instruction));
+                instruction->kind = INSTRUCTION_ADD;
+                instruction->operand = NULL;
+                STAILQ_INSERT_TAIL(instruction_list, instruction, entries);
+            } else if (strcmp(expression->identifier->name, "*") == 0) {
+                MALLOC(instruction, sizeof(struct Instruction));
+                instruction->kind = INSTRUCTION_MUL;
+                instruction->operand = NULL;
+                STAILQ_INSERT_TAIL(instruction_list, instruction, entries);
+            } else {
+                fprintf(stderr,
+                        "Cannot compile identifier: %s",
+                        expression->identifier->name);
+                exit(1);
+            }
+            // TODO: Non-builtins
             break;
-        }
-        break;
-    case EXPR_PROCEDURE_CALL:
-        push_procedure_call_context(expression->procedure_call, context_stack);
-        break;
+        case EXPR_LITERAL:
+            switch (expression->literal->kind) {
+                case LIT_NUMBER:
+                    MALLOC(instruction, sizeof(struct Instruction));
+                    MALLOC(instruction->operand, sizeof(union RuntimeValue));
+                    instruction->kind = INSTRUCTION_PUSH;
+                    instruction->operand->immediate =
+                        expression->literal->number;
+                    STAILQ_INSERT_TAIL(instruction_list, instruction, entries);
+                    break;
+            }
+            break;
+        case EXPR_PROCEDURE_CALL:
+            push_procedure_call_context(expression->procedure_call,
+                                        context_stack);
+            break;
     }
 }

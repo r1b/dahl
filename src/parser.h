@@ -1,35 +1,24 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <sys/queue.h>
 #include "lexer.h"
+#include <sys/queue.h>
 
-enum ExpressionKind
-{
-    EXPR_IDENTIFIER,
-    EXPR_LITERAL,
-    EXPR_PROCEDURE_CALL
-};
-enum LiteralKind
-{
-    LIT_NUMBER
-};
+enum ExpressionKind { EXPR_IDENTIFIER, EXPR_LITERAL, EXPR_PROCEDURE_CALL };
+enum LiteralKind { LIT_NUMBER };
 
-struct Identifier
-{
+struct Identifier {
     char *name;
 };
 
-struct Literal
-{
+struct Literal {
     enum LiteralKind kind;
     union {
         int number;
     };
 };
 
-struct Operand
-{
+struct Operand {
     struct Expression *expression;
     // clang-format off
     STAILQ_ENTRY(Operand) entries;
@@ -38,14 +27,12 @@ struct Operand
 
 STAILQ_HEAD(OperandList, Operand);
 
-struct ProcedureCall
-{
+struct ProcedureCall {
     struct Expression *operator_; // FIXME: naming conflict
     struct OperandList *operand_list;
 };
 
-struct Expression
-{
+struct Expression {
     enum ExpressionKind kind;
     union {
         struct Identifier *identifier;
@@ -54,8 +41,7 @@ struct Expression
     };
 };
 
-struct Context
-{
+struct Context {
     struct Expression *expression;
     // clang-format off
     SLIST_ENTRY(Context) entries;

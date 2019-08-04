@@ -1,11 +1,10 @@
 #ifndef VM_H
 #define VM_H
 
-#include <sys/queue.h>
 #include "compiler.h"
+#include <sys/queue.h>
 
-struct VmStackValue
-{
+struct VmStackValue {
     union RuntimeValue *value;
     // clang-format off
     SLIST_ENTRY(VmStackValue) entries;

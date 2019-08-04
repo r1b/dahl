@@ -1,26 +1,29 @@
-#include <check.h>
+#include "check_lexer.h"
 #include "../src/lexer.h"
 #include "../src/utils.h"
+#include <check.h>
 
-START_TEST(test_lex_simple_expression)
-{
+void ck_token_eq(struct Token *token_a, struct Token *token_b) {
+    ck_assert_int_eq(token_a->kind, token_b->kind);
+    ck_assert_pstr_eq((const char *)token_a->lexeme,
+                      (const char *)token_b->lexeme);
+}
+
+START_TEST(test_lex_simple_expression) {
     char expr[] = "(+ 1 1)";
-    int expected_kinds[] = {
-        TOKEN_PAREN_L,
-        TOKEN_IDENTIFIER,
-        TOKEN_NUMBER,
-        TOKEN_NUMBER,
-        TOKEN_PAREN_R,
-    };
+    struct Token expected_tokens[] = {MOCK_TOKEN(TOKEN_PAREN_L, NULL),
+                                      MOCK_TOKEN(TOKEN_IDENTIFIER, "+"),
+                                      MOCK_TOKEN(TOKEN_NUMBER, "1"),
+                                      MOCK_TOKEN(TOKEN_NUMBER, "1"),
+                                      MOCK_TOKEN(TOKEN_PAREN_R, NULL)};
 
     FILE *fd = fmemopen(expr, strlen(expr), "r");
     struct TokenList *token_list = lex(fd);
 
-    struct Token *token;
+    struct Token *actual_token;
     unsigned int i = 0;
-    STAILQ_FOREACH(token, token_list, entries)
-    {
-        ck_assert_int_eq(token->kind, expected_kinds[i]);
+    STAILQ_FOREACH(actual_token, token_list, entries) {
+        ck_token_eq(actual_token, &expected_tokens[i]);
         i += 1;
     }
 
@@ -29,8 +32,7 @@ START_TEST(test_lex_simple_expression)
 }
 END_TEST
 
-Suite *lexer_suite(void)
-{
+Suite *lexer_suite(void) {
     Suite *s;
     TCase *tc_core;
 
@@ -44,8 +46,7 @@ Suite *lexer_suite(void)
     return s;
 }
 
-int main(void)
-{
+int main(void) {
     int number_failed;
     Suite *s;
     SRunner *sr;

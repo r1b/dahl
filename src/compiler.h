@@ -1,11 +1,10 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
-#include <sys/queue.h>
 #include "parser.h"
+#include <sys/queue.h>
 
-enum InstructionKind
-{
+enum InstructionKind {
     INSTRUCTION_ADD,
     // INSTRUCTION_CALL,
     INSTRUCTION_MUL,
@@ -18,8 +17,7 @@ union RuntimeValue {
     int immediate;
 };
 
-struct Instruction
-{
+struct Instruction {
     enum InstructionKind kind;
     union RuntimeValue *operand;
     // clang-format off

@@ -1,19 +1,13 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include <sys/queue.h>
+#include <stdbool.h>
 #include <stdio.h>
+#include <sys/queue.h>
 
-enum TokenKind
-{
-    TOKEN_IDENTIFIER,
-    TOKEN_NUMBER,
-    TOKEN_PAREN_L,
-    TOKEN_PAREN_R
-};
+enum TokenKind { TOKEN_IDENTIFIER, TOKEN_NUMBER, TOKEN_PAREN_L, TOKEN_PAREN_R };
 
-struct Token
-{
+struct Token {
     enum TokenKind kind;
     unsigned char *lexeme;
     // clang-format off

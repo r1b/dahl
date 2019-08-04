@@ -1,0 +1,8 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 80
+
+BinPackArguments: false
+BinPackParameters: false
+
+IndentCaseLabels: true
