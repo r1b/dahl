@@ -2,6 +2,7 @@
 #define CHECK_LEXER_H
 
 #include "../src/lexer.h"
+#include <check.h>
 
 #define MOCK_TOKEN(k, l)                                                       \
     {                                                                          \
@@ -9,5 +10,6 @@
     }
 
 void ck_token_eq(struct Token *, struct Token *);
+Suite *make_lexer_suite(void);
 
 #endif

@@ -1,7 +1,6 @@
 #include "check_lexer.h"
 #include "../src/lexer.h"
 #include "../src/utils.h"
-#include <check.h>
 
 void ck_token_eq(struct Token *token_a, struct Token *token_b) {
     ck_assert_int_eq(token_a->kind, token_b->kind);
@@ -32,30 +31,16 @@ START_TEST(test_lex_simple_expression) {
 }
 END_TEST
 
-Suite *lexer_suite(void) {
+Suite *make_lexer_suite(void) {
     Suite *s;
     TCase *tc_core;
 
-    s = suite_create("Lexer");
+    s = suite_create("lexer");
 
-    tc_core = tcase_create("Core");
+    tc_core = tcase_create("core");
 
     tcase_add_test(tc_core, test_lex_simple_expression);
     suite_add_tcase(s, tc_core);
 
     return s;
-}
-
-int main(void) {
-    int number_failed;
-    Suite *s;
-    SRunner *sr;
-
-    s = lexer_suite();
-    sr = srunner_create(s);
-
-    srunner_run_all(sr, CK_NORMAL);
-    number_failed = srunner_ntests_failed(sr);
-    srunner_free(sr);
-    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
