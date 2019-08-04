@@ -9,7 +9,6 @@ struct Token *lex_identifier(FILE *source) {
     bool done = false;
     unsigned char *identifier = NULL;
     size_t size = 0;
-    struct Token *token;
 
     while (!done && ((cur_ = fgetc(source)) != EOF)) {
         cur = (unsigned char)cur_;
@@ -52,6 +51,7 @@ struct Token *lex_identifier(FILE *source) {
     REALLOC(identifier, size * sizeof(unsigned char));
     identifier[size - 1] = '\0';
 
+    struct Token *token;
     MALLOC(token, sizeof(struct Token));
     token->kind = TOKEN_IDENTIFIER;
     token->lexeme = identifier;
@@ -65,7 +65,6 @@ struct Token *lex_number(FILE *source) {
     bool done = false;
     unsigned char *digits = NULL;
     size_t size = 0;
-    struct Token *token;
 
     while (!done && ((cur_ = fgetc(source)) != EOF)) {
         cur = (unsigned char)cur_;
@@ -92,6 +91,7 @@ struct Token *lex_number(FILE *source) {
     REALLOC(digits, size * sizeof(unsigned char));
     digits[size] = '\0';
 
+    struct Token *token;
     MALLOC(token, sizeof(struct Token));
     token->kind = TOKEN_NUMBER;
     token->lexeme = digits;
@@ -108,7 +108,6 @@ struct TokenList *lex(FILE *source) {
     STAILQ_INIT(token_list);
 
     while ((cur_ = fgetc(source)) != EOF) {
-        struct Token *token;
         cur = (unsigned char)cur_;
 
         switch (cur) {
@@ -117,7 +116,8 @@ struct TokenList *lex(FILE *source) {
             case '\n':
             case '\r':
                 break;
-            case '(':
+            case '(': {
+                struct Token *token;
                 MALLOC(token, sizeof(struct Token));
                 token->kind = TOKEN_PAREN_L;
                 token->lexeme = NULL;
@@ -125,13 +125,16 @@ struct TokenList *lex(FILE *source) {
                 STAILQ_INSERT_TAIL(token_list, token, entries);
 
                 break;
-            case ')':
+            }
+            case ')': {
+                struct Token *token;
                 MALLOC(token, sizeof(struct Token));
                 token->kind = TOKEN_PAREN_R;
                 token->lexeme = NULL;
 
                 STAILQ_INSERT_TAIL(token_list, token, entries);
                 break;
+            }
             case 'A' ... 'Z':
             case 'a' ... 'z':
             case '+':
@@ -149,16 +152,18 @@ struct TokenList *lex(FILE *source) {
             case '?':
             case '^':
             case '_':
-            case '~':
+            case '~': {
                 ungetc(cur, source);
-                token = lex_identifier(source);
+                struct Token *token = lex_identifier(source);
                 STAILQ_INSERT_TAIL(token_list, token, entries);
                 break;
-            case '0' ... '9':
+            }
+            case '0' ... '9': {
                 ungetc(cur, source);
-                token = lex_number(source);
+                struct Token *token = lex_number(source);
                 STAILQ_INSERT_TAIL(token_list, token, entries);
                 break;
+            }
             default:
                 fprintf(stderr, "Unrecognized character: %c", cur);
                 exit(1);
