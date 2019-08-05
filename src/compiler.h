@@ -20,9 +20,7 @@ union RuntimeValue {
 struct Instruction {
     enum InstructionKind kind;
     union RuntimeValue *operand;
-    // clang-format off
     STAILQ_ENTRY(Instruction) entries;
-    // clang-format on
 };
 
 STAILQ_HEAD(InstructionList, Instruction);

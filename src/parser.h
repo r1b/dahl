@@ -20,9 +20,7 @@ struct Literal {
 
 struct Operand {
     struct Expression *expression;
-    // clang-format off
     STAILQ_ENTRY(Operand) entries;
-    // clang-format on
 };
 
 STAILQ_HEAD(OperandList, Operand);
@@ -43,9 +41,7 @@ struct Expression {
 
 struct Context {
     struct Expression *expression;
-    // clang-format off
     SLIST_ENTRY(Context) entries;
-    // clang-format on
 };
 
 SLIST_HEAD(ContextStack, Context);

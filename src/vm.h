@@ -6,9 +6,7 @@
 
 struct VmStackValue {
     union RuntimeValue *value;
-    // clang-format off
     SLIST_ENTRY(VmStackValue) entries;
-    // clang-format on
 };
 
 SLIST_HEAD(VmStack, VmStackValue);

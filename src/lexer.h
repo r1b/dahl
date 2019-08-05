@@ -10,16 +10,14 @@ enum TokenKind { TOKEN_IDENTIFIER, TOKEN_NUMBER, TOKEN_PAREN_L, TOKEN_PAREN_R };
 struct Token {
     enum TokenKind kind;
     unsigned char *lexeme;
-    // clang-format off
     STAILQ_ENTRY(Token) entries;
-    //clang-format on
 };
 
 STAILQ_HEAD(TokenList, Token);
 
 struct Token *create_token(enum TokenKind kind, unsigned char *lexeme);
-void free_token(struct Token*);
-void free_token_list(struct TokenList*);
+void free_token(struct Token *);
+void free_token_list(struct TokenList *);
 
 struct TokenList *lex(FILE *source);
 struct Token *lex_identifier(FILE *);
