@@ -1,0 +1,8 @@
+PROCEDURE-CALL
+    OPERATOR
+        IDENTIFIER +
+    OPERAND-LIST
+        LITERAL
+            NUMBER 1
+        LITERAL
+            NUMBER 1
