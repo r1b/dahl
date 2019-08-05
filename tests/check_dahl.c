@@ -1,4 +1,5 @@
 #include "check_lexer.h"
+#include "check_parser.h"
 #include <stdlib.h>
 
 int main(void) {
@@ -6,6 +7,7 @@ int main(void) {
     SRunner *sr;
 
     sr = srunner_create(make_lexer_suite());
+    srunner_add_suite(sr, make_parser_suite());
 
     srunner_run_all(sr, CK_VERBOSE);
     number_failed = srunner_ntests_failed(sr);
