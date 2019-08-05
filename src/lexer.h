@@ -17,6 +17,8 @@ STAILQ_HEAD(TokenList, Token);
 
 struct Token *create_token(enum TokenKind kind, unsigned char *lexeme);
 void free_token(struct Token *);
+
+char *render_token_list(struct TokenList *);
 void free_token_list(struct TokenList *);
 
 struct TokenList *lex(FILE *source);

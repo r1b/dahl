@@ -13,6 +13,50 @@ inline struct Token *create_token(enum TokenKind kind, unsigned char *lexeme) {
     return token;
 }
 
+void free_token(struct Token *token) {
+    free(token->lexeme);
+    free(token);
+}
+
+char *render_token_list(struct TokenList *token_list) {
+    char *rendered_tokens = "";
+    struct Token *token;
+
+    STAILQ_FOREACH(token, token_list, entries) {
+        switch (token->kind) {
+            case TOKEN_IDENTIFIER:
+                asprintf(&rendered_tokens,
+                         "%sIDENTIFIER %s\n",
+                         rendered_tokens,
+                         token->lexeme);
+                break;
+            case TOKEN_NUMBER:
+                asprintf(&rendered_tokens,
+                         "%sNUMBER %s\n",
+                         rendered_tokens,
+                         token->lexeme);
+                break;
+            case TOKEN_PAREN_L:
+                asprintf(&rendered_tokens, "%sPAREN-L\n", rendered_tokens);
+                break;
+            case TOKEN_PAREN_R:
+                asprintf(&rendered_tokens, "%sPAREN-R\n", rendered_tokens);
+                break;
+        }
+    }
+
+    return rendered_tokens;
+}
+
+void free_token_list(struct TokenList *token_list) {
+    struct Token *token, *token_;
+    STAILQ_FOREACH_SAFE(token, token_list, entries, token_) {
+        STAILQ_REMOVE(token_list, token, Token, entries);
+        free_token(token);
+    }
+    free(token_list);
+}
+
 struct Token *lex_identifier(FILE *source) {
     int cur_;
     unsigned char cur;
@@ -158,18 +202,4 @@ struct TokenList *lex(FILE *source) {
     }
 
     return token_list;
-}
-
-void free_token(struct Token *token) {
-    free(token->lexeme);
-    free(token);
-}
-
-void free_token_list(struct TokenList *token_list) {
-    struct Token *token, *token_;
-    STAILQ_FOREACH_SAFE(token, token_list, entries, token_) {
-        STAILQ_REMOVE(token_list, token, Token, entries);
-        free_token(token);
-    }
-    free(token_list);
 }
