@@ -66,7 +66,10 @@ void update_procedure_call(struct Expression *expression,
 
 void update_expression(struct Expression *src_expression,
                        struct Expression *dest_expression) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-enum"
     switch (dest_expression->kind) {
+#pragma clang diagnostic pop
         case EXPR_PROCEDURE_CALL:
             update_procedure_call(src_expression,
                                   dest_expression->procedure_call);
