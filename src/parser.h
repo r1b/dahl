@@ -46,13 +46,22 @@ struct Context {
 
 SLIST_HEAD(ContextStack, Context);
 
+struct ContextStack *init_context_stack(void);
+void free_context_stack(struct ContextStack *context_stack);
 struct Context *init_context(void);
 
-struct ProcedureCall *init_procedure_call(void);
+struct Expression *create_procedure_call(void);
+struct Expression *create_identifier(struct Token *);
+struct Expression *create_number(struct Token *);
+
 void update_procedure_call(struct Expression *, struct ProcedureCall *);
+
+struct Expression *pop_expression(struct ContextStack *context_stack);
+void push_expression(struct Expression *expression,
+                     struct ContextStack *context_stack);
+char *render_expression(struct Expression *);
 void update_expression(struct Expression *, struct Expression *);
 
 struct Expression *parse(struct TokenList *);
-struct Expression *parse_expression(struct Token *, struct ContextStack *);
 
 #endif

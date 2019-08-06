@@ -3,11 +3,7 @@
 #include "parser.h"
 #include "vm.h"
 
-// According to V `8` is my "life path"
-// https://feliciabender.com/eight-life-path-2/
-#define DEBUG 8
-
-int main(int argc, char **argv) {
+int main(void) {
     struct TokenList *token_list = lex(stdin);
     struct Expression *expression = parse(token_list);
     struct InstructionList *instruction_list = compile(expression);
