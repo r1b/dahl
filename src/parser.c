@@ -81,6 +81,12 @@ void update_expression(struct Expression *src_expression,
     }
 }
 
+inline struct Expression *pop_expression(struct ContextStack *context_stack) {
+    struct Context *context = SLIST_FIRST(context_stack);
+    SLIST_REMOVE_HEAD(context_stack, entries);
+    return context->expression;
+}
+
 inline void push_expression(struct Expression *expression,
                             struct ContextStack *context_stack) {
     struct Context *context;
@@ -91,10 +97,63 @@ inline void push_expression(struct Expression *expression,
     SLIST_INSERT_HEAD(context_stack, context, entries);
 }
 
-inline struct Expression *pop_expression(struct ContextStack *context_stack) {
-    struct Context *context = SLIST_FIRST(context_stack);
-    SLIST_REMOVE_HEAD(context_stack, entries);
-    return context->expression;
+char *render_indent(size_t depth) {
+    char *indent = NULL;
+    for (size_t i = 0; i < depth; i++) {
+        asprintf(&indent, "%s\t", indent);
+    }
+    return indent;
+}
+
+char *render_expression(struct Expression *expression) {
+    size_t depth = 0;
+    char *rendered_expression = NULL;
+    struct ContextStack *context_stack = init_context_stack();
+
+    push_expression(expression, context_stack);
+
+    while (!SLIST_EMPTY(context_stack)) {
+        expression = pop_expression(context_stack);
+        switch (expression->kind) {
+            case EXPR_IDENTIFIER:
+                asprintf(&rendered_expression,
+                         "%s%s%s %s\n",
+                         rendered_expression,
+                         render_indent(depth),
+                         "IDENTIFIER",
+                         expression->identifier->name);
+                break;
+            case EXPR_LITERAL:
+                asprintf(&rendered_expression,
+                         "%s%s%s\n",
+                         rendered_expression,
+                         render_indent(depth),
+                         "LITERAL");
+                switch (expression->literal->kind) {
+                    case LIT_NUMBER:
+                        asprintf(&rendered_expression,
+                                 "%s%s%s %d\n",
+                                 rendered_expression,
+                                 render_indent(depth + 1),
+                                 "NUMBER",
+                                 expression->literal->number);
+                }
+                break;
+            case EXPR_PROCEDURE_CALL:
+                asprintf(&rendered_expression,
+                         "%s%s%s\n",
+                         rendered_expression,
+                         render_indent(depth),
+                         "PROCEDURE_CALL");
+                depth += 1;
+                // render_procedure_call(...)
+                break;
+        }
+    }
+
+    free_context_stack(context_stack);
+
+    return rendered_expression;
 }
 
 struct ContextStack *init_context_stack(void) {
