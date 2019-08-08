@@ -2,6 +2,11 @@
 #include "lexer.h"
 #include "utils.h"
 
+inline bool is_lambda(struct Token *token) {
+    return (token != NULL && token->kind == TOKEN_IDENTIFIER &&
+            strcmp((const char *)token->lexeme, "lambda") == 0);
+}
+
 struct Expression *create_identifier(struct Token *token) {
     struct Expression *expression;
     MALLOC(expression, sizeof(struct Expression));
@@ -32,7 +37,59 @@ struct Expression *create_number(struct Token *token) {
     return expression;
 }
 
+struct Expression *create_lambda(struct TokenList **token_list) {
+    struct Expression *expression;
+    MALLOC(expression, sizeof(struct Expression));
+
+    expression->kind = EXPR_LAMBDA;
+
+    struct Lambda *lambda;
+    MALLOC(lambda, sizeof(struct Lambda));
+    MALLOC(lambda->operand_list, sizeof(struct OperandList));
+    MALLOC(lambda->body, sizeof(struct Expression));
+
+    STAILQ_INIT(lambda->operand_list);
+    lambda->body = NULL;
+
+    struct Token *token;
+    bool done = false;
+
+    while (!done && !STAILQ_EMPTY(*token_list)) {
+        token = STAILQ_FIRST(*token_list);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-enum"
+        switch (token->kind) {
+#pragma clang diagnostic pop
+            case TOKEN_PAREN_R:
+                done = true;
+                break;
+            case TOKEN_IDENTIFIER: {
+                struct Operand *operand;
+                MALLOC(operand, sizeof(struct Operand *));
+                operand->expression = create_identifier(token);
+                STAILQ_INSERT_TAIL(lambda->operand_list, operand, entries);
+            } break;
+            default:
+                fprintf(stderr,
+                        "Invalid lambda operand %d: %s",
+                        token->kind,
+                        token->lexeme);
+                exit(1);
+        }
+        STAILQ_REMOVE_HEAD(*token_list, entries);
+    }
+
+    expression->lambda = lambda;
+
+    return expression;
+}
+
 struct Expression *create_procedure_call(void) {
+    struct Expression *expression;
+    MALLOC(expression, sizeof(struct Expression));
+
+    expression->kind = EXPR_PROCEDURE_CALL;
+
     struct ProcedureCall *procedure_call;
     MALLOC(procedure_call, sizeof(struct ProcedureCall));
     MALLOC(procedure_call->operand_list, sizeof(struct OperandList));
@@ -40,10 +97,6 @@ struct Expression *create_procedure_call(void) {
     procedure_call->operator_ = NULL;
     STAILQ_INIT(procedure_call->operand_list);
 
-    struct Expression *expression;
-    MALLOC(expression, sizeof(struct Expression));
-
-    expression->kind = EXPR_PROCEDURE_CALL;
     expression->procedure_call = procedure_call;
 
     return expression;
@@ -70,6 +123,9 @@ void update_expression(struct Expression *src_expression,
 #pragma clang diagnostic ignored "-Wswitch-enum"
     switch (dest_expression->kind) {
 #pragma clang diagnostic pop
+        case EXPR_LAMBDA:
+            dest_expression->lambda->body = src_expression;
+            break;
         case EXPR_PROCEDURE_CALL:
             update_procedure_call(src_expression,
                                   dest_expression->procedure_call);
@@ -120,8 +176,9 @@ struct Expression *parse(struct TokenList *token_list) {
     struct Expression *expression = NULL;
     struct Token *token;
 
-    STAILQ_FOREACH(token, token_list, entries) {
+    while (!STAILQ_EMPTY(token_list)) {
         bool will_update = true;
+        token = STAILQ_FIRST(token_list);
 
         switch (token->kind) {
             case TOKEN_IDENTIFIER:
@@ -130,13 +187,18 @@ struct Expression *parse(struct TokenList *token_list) {
             case TOKEN_NUMBER:
                 expression = create_number(token);
                 break;
-            case TOKEN_PAREN_L:
-                expression = create_procedure_call();
-                push_expression(expression, context_stack);
+            case TOKEN_PAREN_L: {
+                if (is_lambda(STAILQ_NEXT(token, entries))) {
+                    expression = create_lambda(&token_list);
+                } else {
+                    expression = create_procedure_call();
+                }
                 will_update = false;
-                break;
+                push_expression(expression, context_stack);
+            } break;
             case TOKEN_PAREN_R:
                 expression = pop_expression(context_stack);
+                // TODO: Validate the expression
                 break;
         }
 
@@ -146,6 +208,8 @@ struct Expression *parse(struct TokenList *token_list) {
             struct Context *top_context = SLIST_FIRST(context_stack);
             update_expression(expression, top_context->expression);
         }
+
+        STAILQ_REMOVE_HEAD(token_list, entries);
     }
 
     free_context_stack(context_stack);
