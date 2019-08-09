@@ -4,17 +4,17 @@
 #include "parser.h"
 #include <sys/queue.h>
 
+union RuntimeValue {
+    void *address;
+    int immediate;
+};
+
 enum InstructionKind {
     INSTRUCTION_ADD,
     // INSTRUCTION_CALL,
     INSTRUCTION_MUL,
     INSTRUCTION_POP,
     INSTRUCTION_PUSH,
-};
-
-union RuntimeValue {
-    void *address;
-    int immediate;
 };
 
 struct Instruction {
