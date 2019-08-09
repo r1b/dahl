@@ -1,6 +1,12 @@
+CC = clang
+CFLAGS += -g -Weverything -Wno-gnu-case-range -Wno-padded
+LDFLAGS += -shared
+SRC = $(wildcard src/*.c)
+TESTSRC = $(wildcard test/*.c)
+
 debug:
-	clang -g -o build/dahl -Weverything -Wno-gnu-case-range -Wno-padded src/*.c
+	$(CC) $(CFLAGS) -o build/dahl $(SRC)
 lib:
-	clang -g -o build/libdahl.dylib -shared src/*.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o build/libdahl.dylib $(SRC)
 test:
-	clang -Lbuild -g -lcheck -ldahl -o build/test-dahl tests/*.c && ./build/test-dahl
+	$(CC) $(CFLAGS) -Lbuild -lcheck -ldahl -o build/test-dahl $(TESTSRC)
