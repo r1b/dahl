@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS += -I include/ -I contrib/include/ -Weverything -Wno-gnu-case-range -Wno-padded -g
+CFLAGS += -I include/ -Weverything -Wno-gnu-case-range -Wno-padded -g
 LDFLAGS += -shared
 SRC = $(wildcard src/*.c)
 TESTSRC = $(wildcard test/*.c)

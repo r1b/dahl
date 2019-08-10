@@ -42,6 +42,7 @@ struct ProcedureCall {
 };
 
 struct Expression {
+    struct Expression *parent;
     enum ExpressionKind kind;
     union {
         struct Identifier *identifier;
@@ -69,7 +70,8 @@ struct Expression *create_identifier(struct Token *);
 struct Expression *create_number(struct Token *);
 struct Expression *create_lambda(struct TokenList **);
 
-void update_procedure_call(struct Expression *, struct ProcedureCall *);
+void insert_operand(struct ProcedureCall *, struct Expression *);
+void set_operator(struct ProcedureCall *, struct Expression *);
 
 struct Expression *pop_expression(struct ContextStack *context_stack);
 void push_expression(struct Expression *expression,

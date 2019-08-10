@@ -7,11 +7,18 @@ inline bool is_lambda(struct Token *token) {
             strcmp((const char *)token->lexeme, "lambda") == 0);
 }
 
-struct Expression *create_identifier(struct Token *token) {
+inline struct Expression *create_expression(enum ExpressionKind kind) {
     struct Expression *expression;
     MALLOC(expression, sizeof(struct Expression));
 
-    expression->kind = EXPR_IDENTIFIER;
+    expression->kind = kind;
+    expression->parent = NULL;
+
+    return expression;
+}
+
+struct Expression *create_identifier(struct Token *token) {
+    struct Expression *expression = create_expression(EXPR_IDENTIFIER);
 
     MALLOC(expression->identifier, sizeof(struct Identifier));
     MALLOC(expression->identifier->name,
@@ -25,10 +32,7 @@ struct Expression *create_identifier(struct Token *token) {
 }
 
 struct Expression *create_number(struct Token *token) {
-    struct Expression *expression;
-    MALLOC(expression, sizeof(struct Expression));
-
-    expression->kind = EXPR_LITERAL;
+    struct Expression *expression = create_expression(EXPR_LITERAL);
 
     MALLOC(expression->literal, sizeof(struct Literal));
     expression->literal->kind = LIT_NUMBER;
@@ -38,10 +42,7 @@ struct Expression *create_number(struct Token *token) {
 }
 
 struct Expression *create_lambda(struct TokenList **token_list) {
-    struct Expression *expression;
-    MALLOC(expression, sizeof(struct Expression));
-
-    expression->kind = EXPR_LAMBDA;
+    struct Expression *expression = create_expression(EXPR_LAMBDA);
 
     struct Lambda *lambda;
     MALLOC(lambda, sizeof(struct Lambda));
@@ -85,10 +86,7 @@ struct Expression *create_lambda(struct TokenList **token_list) {
 }
 
 struct Expression *create_procedure_call(void) {
-    struct Expression *expression;
-    MALLOC(expression, sizeof(struct Expression));
-
-    expression->kind = EXPR_PROCEDURE_CALL;
+    struct Expression *expression = create_expression(EXPR_PROCEDURE_CALL);
 
     struct ProcedureCall *procedure_call;
     MALLOC(procedure_call, sizeof(struct ProcedureCall));
@@ -102,14 +100,14 @@ struct Expression *create_procedure_call(void) {
     return expression;
 }
 
-void update_procedure_call(struct Expression *expression,
-                           struct ProcedureCall *procedure_call) {
-    if (procedure_call->operator_ == NULL) {
-        MALLOC(procedure_call->operator_, sizeof(struct Expression));
-        procedure_call->operator_ = expression;
-        return;
-    }
+inline void set_operator(struct ProcedureCall *procedure_call,
+                         struct Expression *expression) {
+    MALLOC(procedure_call->operator_, sizeof(struct Expression));
+    procedure_call->operator_ = expression;
+}
 
+inline void insert_operand(struct ProcedureCall *procedure_call,
+                           struct Expression *expression) {
     struct Operand *operand;
     MALLOC(operand, sizeof(struct Operand *));
     operand->expression = expression;
@@ -117,22 +115,22 @@ void update_procedure_call(struct Expression *expression,
     STAILQ_INSERT_TAIL(procedure_call->operand_list, operand, entries);
 }
 
-void update_expression(struct Expression *src_expression,
-                       struct Expression *dest_expression) {
+void update_expression(struct Expression *parent, struct Expression *child) {
+    child->parent = parent;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch-enum"
-    switch (dest_expression->kind) {
+    switch (parent->kind) {
 #pragma clang diagnostic pop
         case EXPR_LAMBDA:
-            dest_expression->lambda->body = src_expression;
+            parent->lambda->body = child;
             break;
         case EXPR_PROCEDURE_CALL:
-            update_procedure_call(src_expression,
-                                  dest_expression->procedure_call);
+            parent->procedure_call->operator_ == NULL
+                ? set_operator(parent->procedure_call, child)
+                : insert_operand(parent->procedure_call, child);
             break;
         default:
-            fprintf(
-                stderr, "Cannot update expression: %d", dest_expression->kind);
+            fprintf(stderr, "Cannot update expression: %d", parent->kind);
             exit(1);
     }
 }
@@ -206,7 +204,7 @@ struct Expression *parse(struct TokenList *token_list) {
 
         if (will_update) {
             struct Context *top_context = SLIST_FIRST(context_stack);
-            update_expression(expression, top_context->expression);
+            update_expression(top_context->expression, expression);
         }
 
         STAILQ_REMOVE_HEAD(token_list, entries);
